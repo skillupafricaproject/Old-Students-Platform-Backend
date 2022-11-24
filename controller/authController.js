@@ -23,9 +23,11 @@ const signToken = id => {
 // }
 
 exports.signup = asyncErrors(async (req, res, next) => {
-        const newUser = new User ({
-            firstname: req.body.firstname,
-            lastname: req.body.lastname,
+
+    
+        const newUser =await User.create({
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
             email: req.body.email,
             password: req.body.password,
             confirmPassword: req.body.confirmPassword
@@ -42,14 +44,14 @@ exports.signup = asyncErrors(async (req, res, next) => {
         })
         await verificationToken.save()
         await newUser.save()
-
+    
         mailTransport().sendMail({
             from: 'noreply@email.com',
             to: newUser.email,
             subject: 'verify your email account',
             html: emailTemplate(OTP)
         })
-
+        
 
         // mailgun().messages().send({
         //     from: 'noreply@email.com',
@@ -71,6 +73,8 @@ exports.signup = asyncErrors(async (req, res, next) => {
                 user: newUser
             }
         })
+        
+
    
     })
 exports.login = asyncErrors(async(req, res, next) =>{
