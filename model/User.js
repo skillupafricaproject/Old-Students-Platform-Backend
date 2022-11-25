@@ -42,7 +42,6 @@ const userSchema = new mongoose.Schema({
         select: false
     },
     
-
 })
 
 //encrypt the password by using a mongoose middleware(presave middleware)
