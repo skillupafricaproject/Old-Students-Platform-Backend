@@ -25,6 +25,6 @@ app.use('/api/v1/', schoolRouter)
 
 
 mongoose.connect(process.env.MONGO_URI, 
-    ()=>{console.log('database is connected')})
+    ()=>{console.log('Database is connected')})
 
-app.listen(port, ()=>{console.log(`server is running on http:\\localhost:${port}`)})
+app.listen(port, ()=>{console.log(`Server is running on http:\\localhost:${port}`)})

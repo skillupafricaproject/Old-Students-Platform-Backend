@@ -4,6 +4,7 @@ const schoolSchema = new mongoose.Schema ({
     schoolName: {
         type: String,
         required: [true, 'Please provide name of school'],
+        unique: [true, 'School name already exists'],
         maxlength: [1000, 'Name can not be more than 1000 characters']
     },
     schoolDescription: {
