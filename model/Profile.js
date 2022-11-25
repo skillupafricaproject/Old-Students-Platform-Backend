@@ -5,7 +5,7 @@ const crypto = require('crypto')
 const { kStringMaxLength } = require('buffer')
 
 
-const userSchema = new mongoose.Schema({
+const profileSchema = new mongoose.Schema({
     firstName: {
         type: String,
         required: [true, 'Please provide your first name']

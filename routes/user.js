@@ -14,7 +14,7 @@ router.patch('/updateMe', authController.protect, userController.updateMe)
 router.patch('/deleteMe', authController.protect, userController.deleteMe)
 router.get('/logout', authController.protect, authController.logout)
 
-router.get('/user',authController.protect, userController.getUser)
+router.get('/getUser',authController.protect, userController.getUser)
 
 
 module.exports = router

@@ -30,7 +30,6 @@ exports.signup = asyncErrors(async (req, res, next) => {
             lastName: req.body.lastName,
             email: req.body.email,
             password: req.body.password,
-            confirmPassword: req.body.confirmPassword
         })
         // const token = signToken(newUser._id)
         //jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
