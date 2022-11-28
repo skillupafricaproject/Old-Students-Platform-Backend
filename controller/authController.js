@@ -24,7 +24,13 @@ const signToken = id => {
 
 exports.signup = asyncErrors(async (req, res, next) => {
 
-    
+        const {email} = req.body;
+
+        const emailAlreadyExists = await User.findOne({ email});
+        if (emailAlreadyExists) {
+            throw new ('Email already exists')
+        }
+
         const newUser =await User.create({
             firstName: req.body.firstName,
             lastName: req.body.lastName,
