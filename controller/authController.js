@@ -2,7 +2,7 @@ const {promisify} = require('util')
 const User = require('../model/User')
 const jwt = require('jsonwebtoken')
 const VerificationToken = require('../model/verificationToken')
-//const {mailTransport, genOTP, emailTemplate, plainEmailTemp} = require('../util/mail')
+const {genOTP, emailTemplate} = require('../util/mail')
 const mailTransport = require('../util/sendEmail')
 const {isValidObjectId} = require('mongoose')
 const asyncErrors = require('./errorController')
@@ -25,33 +25,38 @@ const signToken = id => {
 exports.signup = asyncErrors(async (req, res, next) => {
 
         const {email} = req.body;
-
+        console.log('Start!')
         const emailAlreadyExists = await User.findOne({ email});
         if (emailAlreadyExists) {
             throw new ('Email already exists')
         }
-
+        console.log(req.body)
         const newUser =await User.create({
             firstName: req.body.firstName,
             lastName: req.body.lastName,
             email: req.body.email,
             password: req.body.password,
         })
+        console.log("Models initiated")
         // const token = signToken(newUser._id)
         //jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
         //     expiresIn: process.env.JWT_EXPIRESIN
         // })
 
         const OTP = genOTP()
+        console.log("Token created")
         const verificationToken = new VerificationToken({
             owner: newUser._id,
             token: OTP
         })
-        await verificationToken.save()
+        console.log("Verification token initiated")
+        verificationToken.save()
+        console.log("Models created")
         await newUser.save()
-    
+        console.log("Models created.")
+
         mailTransport.sendMail({
-            from: 'noreply@email.com',
+            from: '"Rapport" <rappport@email.com>',
             to: newUser.email,
             subject: 'verify your email account',
             html: emailTemplate(OTP)
@@ -76,7 +81,9 @@ exports.signup = asyncErrors(async (req, res, next) => {
             status: 'success',
             OTP,
             data: {
-                user: newUser
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                email: newUser.email
             }
         })
         
