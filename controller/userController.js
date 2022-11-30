@@ -17,11 +17,11 @@ exports.updateMe = asyncErrors(async (req, res, next) => {
     }
 
     //filtered out unwanted fields not allowed to get updated
-    const filteredBody =filterObj(req.body, 'name', 'email', 'dob', 'country', 'stateOfResidence', 'maritalStatus', 'occupation', 'number' );
+    const filteredBody =filterObj(req.body, 'firstName', 'email', 'dob', 'country', 'stateOfResidence', 'maritalStatus', 'occupation', 'number' );
 
 
     //update user document
-    const updatedUser = await Profile.findByIdAndUpdate(req.user.id, filteredBody, 
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, 
         {new: true, runValidators: true,})
 
 

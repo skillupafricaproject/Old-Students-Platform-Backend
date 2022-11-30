@@ -4,6 +4,10 @@ const userRouter = require('./routes/user')
 const schoolRouter = require('./routes/school')
 const mongoose = require('mongoose')
 const cors = require('cors')
+const rateLimit = require('express-rate-limit')
+const helmet = require ('helmet')
+const mongoSanitize = require('express-mongo-sanitize')
+const xss = require('xss-clean')
 //const mg = require('mailgun.js')
 
 
@@ -12,6 +16,14 @@ const app = express()
 
 app.use(express.json())
 app.use(cors())
+
+// Data sanitization against noSql query injection
+app.use(mongoSanitize)
+
+// Data sanitization against xss
+app.use(xss)
+
+app.use
 
 app.use((req, res, next) => {
     req.requestTime = new Date().toISOString();

@@ -2,8 +2,8 @@ const {promisify} = require('util')
 const User = require('../model/User')
 const jwt = require('jsonwebtoken')
 const VerificationToken = require('../model/verificationToken')
-const {mailTransport, genOTP, emailTemplate, plainEmailTemp} = require('../util/mail')
-const sendEmail = require('../util/sendEmail')
+//const {mailTransport, genOTP, emailTemplate, plainEmailTemp} = require('../util/mail')
+const mailTransport = require('../util/sendEmail')
 const {isValidObjectId} = require('mongoose')
 const asyncErrors = require('./errorController')
 const crypto = require('crypto')
@@ -50,7 +50,7 @@ exports.signup = asyncErrors(async (req, res, next) => {
         await verificationToken.save()
         await newUser.save()
     
-        mailTransport().sendMail({
+        mailTransport.sendMail({
             from: 'noreply@email.com',
             to: newUser.email,
             subject: 'verify your email account',
@@ -246,7 +246,7 @@ exports.protect = asyncErrors(async(req, res, next) => {
     }
    console.log(token)
     if(!token){
-        return next(res.status(401).json({message: 'you are not logged in! please log in to get access'}))
+        return next(res.status(401).json({message: 'You are not logged in! Please log in to get access'}))
     }
 
     //verify token
@@ -255,12 +255,12 @@ exports.protect = asyncErrors(async(req, res, next) => {
     //check if user still exists
     const currentUser = await User.findById(decoded.id);
     if(!currentUser) {
-        return next(res.status(401).json({Message: 'user with token no longer exists'}))
+        return next(res.status(401).json({Message: 'User with token no longer exists'}))
     }
 
     //check if user recently changed password after token was issued
     if(currentUser.changePasswordAfter(decoded.iat)){
-        return next(res.status(401).json({message: 'User recently changed password! please log in again!'}))
+        return next(res.status(401).json({message: 'User recently changed password! Please log in again!'}))
     }
 
     
