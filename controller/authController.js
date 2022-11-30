@@ -74,6 +74,7 @@ exports.signup = asyncErrors(async (req, res, next) => {
         // })
         res.status(201).json({
             status: 'success',
+            OTP,
             data: {
                 user: newUser
             }

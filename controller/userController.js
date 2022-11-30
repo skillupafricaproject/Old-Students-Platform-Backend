@@ -1,4 +1,4 @@
-const Profile = require('../model/Profile')
+const User = require('../model/User')
 const asyncErrors = require('./errorController')
 
 const filterObj = (obj, ...allowedFields) => {
@@ -11,9 +11,9 @@ const filterObj = (obj, ...allowedFields) => {
 
 exports.updateMe = asyncErrors(async (req, res, next) => {
     //create error if user Posts password data
-    if(req.body.password || req.body.confirmPassword) {
+    if(req.body.password) {
         return next(res.status(400)
-        .json({message: 'you cannot update your password here. please use the forget password route'}))
+        .json({message: 'You cannot update your password here. Please use the forget password route'}))
     }
 
     //filtered out unwanted fields not allowed to get updated

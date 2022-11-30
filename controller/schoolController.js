@@ -20,3 +20,19 @@ exports.createSchool = asyncErrors(async (req, res, next) => {
     })
 
 })
+
+exports.updateSchool = asyncErrors(async (req, res, next) => {
+    
+        //update school document
+        const updatedSchool = await Profile.findByIdAndUpdate(req.body, 
+            {new: true, runValidators: true,})
+    
+    
+        res.status(200).json({
+            status:'success',
+            data: {
+                user: updatedSchool
+            }
+            
+        }) 
+    })
