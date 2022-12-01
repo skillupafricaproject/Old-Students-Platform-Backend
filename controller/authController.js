@@ -1,284 +1,290 @@
-const {promisify} = require('util')
-const User = require('../model/User')
-const jwt = require('jsonwebtoken')
-const VerificationToken = require('../model/verificationToken')
-const {genOTP, emailTemplate} = require('../util/mail')
-const mailTransport = require('../util/sendEmail')
-const {isValidObjectId} = require('mongoose')
-const asyncErrors = require('./errorController')
-const crypto = require('crypto')
-// const mg = require('mailgun-js')
+const User = require("../model/User");
+const { StatusCodes } = require("http-status-codes");
+const { BadRequestError, UnauthenticatedError } = require("../errors");
+//const jwt = require("jsonwebtoken");
+const createHash = require("../util/createHash");
+const mailTransport = require("../util/sendEmail");
+//const { isValidObjectId } = require("mongoose");
+const crypto = require("crypto");
 
-const signToken = id => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRESIN
-    })
-}
+// const signToken = (id) => {
+//   return jwt.sign({ id }, process.env.JWT_SECRET, {
+//     expiresIn: process.env.JWT_EXPIRESIN,
+//   });
+// };
 
-// const mailgun = () => {
-//     mg({
-//         apiKey: process.env.MAILGUN_KEY,
-//         domain: process.env.MAILGUN_DOMAIN
-//     })
-// }
+exports.signup = async (req, res) => {
+  const { email, firstName, lastName, password } = req.body;
 
-exports.signup = asyncErrors(async (req, res, next) => {
+  const emailAlreadyExists = await User.findOne({ email });
+  if (emailAlreadyExists) {
+    throw new BadRequestError("Email already exists.");
+  }
 
-        const {email} = req.body;
-        console.log('Start!')
-        const emailAlreadyExists = await User.findOne({ email});
-        if (emailAlreadyExists) {
-            throw new ('Email already exists')
-        }
-        console.log(req.body)
-        const newUser =await User.create({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            email: req.body.email,
-            password: req.body.password,
-        })
-        console.log("Models initiated")
-        // const token = signToken(newUser._id)
-        //jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-        //     expiresIn: process.env.JWT_EXPIRESIN
-        // })
+  const verificationToken = crypto.randomBytes(2).toString("hex");
 
-        const OTP = genOTP()
-        console.log("Token created")
-        const verificationToken = new VerificationToken({
-            owner: newUser._id,
-            token: OTP
-        })
-        console.log("Verification token initiated")
-        verificationToken.save()
-        console.log("Models created")
-        await newUser.save()
-        console.log("Models created.")
+  const user = await User.create({
+    firstName,
+    lastName,
+    email,
+    password,
+    verificationToken,
+  });
 
-        mailTransport.sendMail({
-            from: '"Rapport" <rappport@email.com>',
-            to: newUser.email,
-            subject: 'verify your email account',
-            html: emailTemplate(OTP)
-        })
-        
+  // Send mail
+  mailTransport.sendMail({
+    from: '"Rapport" <rappport@email.com>',
+    to: email,
+    subject: "Verify your email account",
+    html: `<h4> Hello, ${firstName}, kindly verify your account with this token: ${verificationToken}</h4>`,
+  });
 
-        // mailgun().messages().send({
-        //     from: 'noreply@email.com',
-        //     to: newUser.email,
-        //     subject: 'verify your email account',
-        //     html: emailTemplate(OTP)
-        // }, (error, body) =>{
-        //     if(error) {
-        //         console.log(error)
-        //         res.status(500).send({msg: 'error in mail sendings'});
-        //     }else{
-        //         console.log(body);
-        //         res.status(200).send({msg: 'email sent'})
-        //     }
-        // })
-        res.status(201).json({
-            status: 'success',
-            OTP,
-            data: {
-                firstName: newUser.firstName,
-                lastName: newUser.lastName,
-                email: newUser.email
-            }
-        })
-        
+  res.status(StatusCodes.CREATED).json({
+    message: "Success! Please check your email to verify account.",
+    user: user,
+    email: user.email,
+    userId: user._id,
+  });
+};
 
-   
-    })
-exports.login = asyncErrors(async(req, res, next) =>{
-        const { email, password } = req.body
-        //check if the email and password fields are filled
-        if(!email.trim() || !password.trim()){
-            return next(res.status(401).json({message: 'Please fill in your log in details'}))
-        }
-         
-        //check if user exists in the database and check if password is correct
-        const user = await User.findOne({email}).select('+password')
-        
-        if(!user || !(await user.comparePassword(password, user.password))){
-            return next(res.status(401).json('Incorrect email or password'))
-        }
-        
-        console.log(req.body)
-        
-        //send token to client
-        const token = signToken(user._id)
-        res.cookie('jwt', token, {
-            expires: new Date(
-                Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-            ),
-            secure: true,
-            httpOnly: true
-        });
-        user.password = undefined;
-        res.status(200).json({
-            status: 'success',
-            token
-        })
-})
+exports.verifyEmail = async (req, res) => {
+  const { id } = req.params;
+  const { verificationToken } = req.body;
+  const user = await User.findOne({ _id: id });
 
-exports.verifyEmail = asyncErrors(async(req, res, next) => {
-    const {userId, otp} = req.body
-    if(!otp.trim()) {
-        return res.status(401).json({status:"Failure", message:"Invalid token"});
-    }
-    if(!isValidObjectId(userId)) {
-        return res.status(401).json({status:"Failure", message:"Invalid User id"});
-    }
+  if (!user) {
+    throw new UnauthenticatedError("Verification Failed.");
+  }
 
-    const user = await User.findById(userId)
-    if (!user) return res.status(401).json({status:"Failure", message:"User not found"});
+  if (user.verificationToken !== verificationToken) {
+    throw new UnauthenticatedError("Verification Failed.");
+  }
+  user.verified = true;
+  user.verificationToken = undefined;
 
-    if(user.verified) return res.status(401).json({status:"Failure", message:"Account already verified"});
+  //res.status(StatusCodes.OK).json({message: "Email Verified!"})
 
-    const token = await VerificationToken.findOne({owner: userId})
-    if(!token) return res.status(401).json({status:"Failure", message:"Sorry, user not found"});
+  //   const isMatched = await token.compareToken(otp, token.token);
+  //   if (!isMatched)
+  //     return res
+  //       .status(401)
+  //       .json({ status: "Failure", message: "Please provide a valid token" });
 
-    const isMatched = await token.compareToken(otp, token.token)
-    if(!isMatched) return res.status(401).json({status:"Failure", message:"Please provide a valid token"});
+  //   user.verified = true;
+  //   user.verificationToken = undefined;
+  await user.save();
 
-    user.verified = true; 
-
-    await VerificationToken.findByIdAndDelete(token._id)
-    await user.save()
-
-    mailTransport().sendMail({
-        from: 'noreply@email.com',
-        to: user.email,
-        subject: 'verify your email account',
-        html: plainEmailTemp("Email Verified Successfully", "Thanks for connecting with us")
+  mailTransport.sendMail({
+    from: '"Rapport" <rappport@email.com>',
+    to: user.email,
+    subject: "Verify your email account",
+    html: `<h4>Hello, ${user.firstName}</h4> <h2>Congratulations</h2> Email Verified successfully`,
+  }),
+    res.status(StatusCodes.OK).json({
+      message: "Email successfully verified.",
     });
+};
 
-    res.json({success: true, message: "Email is successfully verified.", user:{ name:
-    user.name, email: user.email, id: user._id}})
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  //check if the email and password fields are filled
+  if (!email || !password) {
+    throw new BadRequestError("Please fill in your login details");
+  }
 
-})
+  //check if user exists in the database and check if password is correct
+  const user = await User.findOne({ email }).select("+password");
 
-exports.forgotPassword = asyncErrors(async (req, res, next) => {
-    //get user based on posted email
-    const user = await User.findOne({email: req.body.email})
-    if(!user) return next(res.status(404).json({message: 'No user with this email'}))
+  if (!user) {
+    throw new BadRequestError("Invalid Credentials");
+  }
 
+  const isPasswordCorrect = await user.comparePassword(password);
+  if (!isPasswordCorrect) {
+    throw new BadRequestError("Invalid Credentials");
+  }
+
+  if (!user.verified) {
+    throw new UnauthenticatedError("Please verify your email.");
+  }
+
+  //send token to client
+  //let token = user.createJWT()
+
+//   res.cookie("token", token, {
+//     expires: new Date(
+//       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+//     ),
+//     //secure: true,
+//     httpOnly: true,
+//   });
+
+  res.status(StatusCodes.OK).json({
+    message: "Login Successful",
+    //token: token,
+  });
+};
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    throw new BadRequestError("Please provide valid email.");
+  }
+
+  //get user based on posted email
+  const user = await User.findOne({ email });
+
+  if (user) {
     //generate random token
-    const resetToken = user.newTokenCreate()
-    await user.save({validateBeforeSave: false})
+    const passwordToken = crypto.randomBytes(2).toString("hex");
 
-    //send email
-    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/job/resetPassword/${resetToken}`
-
-    const message = `Forgot your password? submit a patch request with your new password and password confirm to: ${resetURL}.\nif
-    you didn\'t forget your password, please ignore this email`;
-
-    try{
-
-        await sendEmail({
-            email: user.email,
-            subject: 'Your password reset token (Valid for 10 min)!',
-            message
-        });
-        
-        res.status(200).json({
-            status: 'Success',
-            message: 'Token sent to email'
-        })
-    } catch(err){
-        user.passwordResetToken = undefined;
-        user.passwordResetExpires = undefined;
-        await user.save({validateBeforeSave: false})
-
-        return next(res.status(500).json({message: 'Major error'}))
-    }
-})
-
-exports.resetPassword = asyncErrors(async(req, res, next) => {
-    //get user Based on token
-    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
-    console.log(hashedToken)
-    const user = await User.findOne({passwordResetToken: hashedToken, passwordResetExpires:{$gt: Date.now()} })
-
-    //if expired token or no user
-    if(!user) return next(res.status(400).json({message: 'Invalid or expired token'}))
-
-    user.password = req.body.password
-    user.confirmPassword = req.body.confirmPassword
-    user.passwordResetToken = undefined
-    user.passwordResetExpires = undefined
-    await user.save()
-
-    //log user in and send JWT
-    const token = signToken(user.id);
-
-    res.status(200).json({
-        status: 'success',
-        token
+    // Send email
+    mailTransport.sendMail({
+      from: '"Rapport" <rappport@email.com>',
+      to: email,
+      subject: "Reset your account",
+      html: `<h4>Hi, kindly reset your password with this token: ${passwordToken}</h4>`,
     });
-})
 
-exports.updatePassword = asyncErrors(async (req, res, next) => {
-    //get user from collection
-    const user = await User.findById(req.user.id).select('+password');
-    
-    //check if the current password is correct
-    if(!(await user.comparePassword(req.body.currentPassword, user.password))) {
-        return next(res.status(401).json({
-            status: 'failure',
-            message: 'your current password is wrong'
-        }))
-    }
+    const tenMinutes = 1000 * 60 * 10;
+    const passwordTokenExpirationDate = new Date (Date.now() + tenMinutes);
+    console.log(passwordToken)
 
-    //if password is correct, update password
-    user.password = req.body.password;
-    user.confirmPassword = req.body.confirmPassword;
+    user.passwordToken = createHash(passwordToken);
+    user.passwordTokenExpirationDate = passwordTokenExpirationDate;
     await user.save();
+  }
 
-    //LOG THE USER IN AND SEND JWT
-    const token = signToken(user.id);
+  res.status(StatusCodes.OK).json({
+    message: "Please check you email for reset password.",
+  });
+};
 
-    res.status(200).json({
-        status: 'success',
-        token
-    })
-})
+exports.resetPassword = async (req, res) => {
+  const { token, email, password } = req.body;
+  if (!token || !email || password) {
+    throw new BadRequestError("Please provide all values");
+  }
+  const user = await User.findOne({ email });
 
-exports.protect = asyncErrors(async(req, res, next) => {
-    //getting token and check if it's there
-    let token;
-    if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
-        token = req.headers.authorization.split(' ')[1]
+  if (user) {
+    const currentDate = new Date();
+
+    if (
+      user.passwordToken === crypto.createHash(token) &&
+      user.passwordTokenExpirationDate > currentDate
+    ) {
+      user.password = password;
+      user.passwordToken = null;
+      user.passwordTokenExpirationDate = null;
+      await user.save();
     }
-   console.log(token)
-    if(!token){
-        return next(res.status(401).json({message: 'You are not logged in! Please log in to get access'}))
-    }
+  }
+  //get user Based on token
+  //   const hashedToken = crypto
+  //     .createHash("sha256")
+  //     .update(req.params.token)
+  //     .digest("hex");
+  //   console.log(hashedToken);
+  //   const user = await User.findOne({
+  //     passwordResetToken: hashedToken,
+  //     passwordResetExpires: { $gt: Date.now() },
+  //   });
 
-    //verify token
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    console.log(decoded)
-    //check if user still exists
-    const currentUser = await User.findById(decoded.id);
-    if(!currentUser) {
-        return next(res.status(401).json({Message: 'User with token no longer exists'}))
-    }
+  //if expired token or no user
+  //   if (!user)
+  //     return next(res.status(400).json({ message: "Invalid or expired token" }));
 
-    //check if user recently changed password after token was issued
-    if(currentUser.changePasswordAfter(decoded.iat)){
-        return next(res.status(401).json({message: 'User recently changed password! Please log in again!'}))
-    }
+  //   user.password = req.body.password;
+  //   user.confirmPassword = req.body.confirmPassword;
+  //   user.passwordResetToken = undefined;
+  //   user.passwordResetExpires = undefined;
+  //   await user.save();
 
-    
-    req.user = currentUser;
-    next()
-})
+  //log user in and send JWT
+  //   const token = signToken(user.id);
 
-exports.logout = asyncErrors(async(req, res, next) =>{
-    res.cookie('jwt', 'logged out',{
-        expires: new Date(Date.now() + 10 * 1000),
-        httpOnly: true})
-        res.status(200).json({status: 'Success'})
-    })
+  //   res.status(200).json({
+  //     status: "success",
+  //     token,
+  //   });
+  // };
 
+  // exports.updatePassword = asyncErrors(async (req, res, next) => {
+  //   //get user from collection
+  //   const user = await User.findById(req.user.id).select("+password");
+
+  //   //check if the current password is correct
+  //   if (!(await user.comparePassword(req.body.currentPassword, user.password))) {
+  //     return next(
+  //       res.status(401).json({
+  //         status: "Failure",
+  //         message: "Your current password is wrong.",
+  //       })
+  //     );
+  //   }
+
+  //   //if password is correct, update password
+  //   user.password = req.body.password;
+  //   user.confirmPassword = req.body.confirmPassword;
+  //   await user.save();
+
+  //   //LOG THE USER IN AND SEND JWT
+  //   const token = signToken(user.id);
+
+  //   res.status(200).json({
+  //     status: "success",
+  //     token,
+  //   });
+  // });
+  //
+  // exports.protect = asyncErrors(async (req, res, next) => {
+  //   //getting token and check if it's there
+  //   let token;
+  //   if (
+  //     req.headers.authorization &&
+  //     req.headers.authorization.startsWith("Bearer")
+  //   ) {
+  //     token = req.headers.authorization.split(" ")[1];
+  //   }
+  //   console.log(token);
+  //   if (!token) {
+  //     return next(
+  //       res
+  //         .status(401)
+  //         .json({ message: "You are not logged in! Please log in to get access" })
+  //     );
+  //   }
+
+  //   //verify token
+  //   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  //   console.log(decoded);
+  //   //check if user still exists
+  //   const currentUser = await User.findById(decoded.id);
+  //   if (!currentUser) {
+  //     return next(
+  //       res.status(401).json({ Message: "User with token no longer exists" })
+  //     );
+  //   }
+
+  //   //check if user recently changed password after token was issued
+  //   if (currentUser.changePasswordAfter(decoded.iat)) {
+  //     return next(
+  //       res.status(401).json({
+  //         message: "User recently changed password! Please log in again!",
+  //       })
+  //     );
+  //   }
+
+  //   req.user = currentUser;
+  //   next();
+  // });
+};
+
+exports.logout = async (req, res) => {
+  res.cookie("token", "logout", {
+    httpOnly: true,
+    expires: new Date(Date.now() + 1000),
+  });
+  res.status(StatusCodes.OK).json({ message: "User logged out!" });
+};

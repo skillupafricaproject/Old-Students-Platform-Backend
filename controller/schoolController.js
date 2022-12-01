@@ -1,7 +1,9 @@
+const { StatusCodes} = require("http-status-codes")
+const { BadRequestError, UnauthenticatedError, NotFoundError} = require("../errors")
 const School = require('../model/School')
-const asyncErrors = require('./errorController')
+//const asyncErrors = require('./errorController')
 
-exports.createSchool = asyncErrors(async (req, res, next) => {
+exports.createSchool = async (req, res, next) => {
     const newSchool = new School ({
         schoolName: req.body.schoolName,
         country: req.body.country,
@@ -12,27 +14,27 @@ exports.createSchool = asyncErrors(async (req, res, next) => {
     })
     await newSchool.save()
 
-    res.status(201).json({
-        status: 'success',
+    res.status(StatusCodes.OK).json({
+        message: 'School group created successfully.',
         data: {
             user: newSchool
         }
     })
 
-})
+}
 
-exports.updateSchool = asyncErrors(async (req, res, next) => {
+exports.updateSchool = async (req, res, next) => {
     
         //update school document
         const updatedSchool = await Profile.findByIdAndUpdate(req.body, 
             {new: true, runValidators: true,})
     
     
-        res.status(200).json({
-            status:'success',
+        res.status(StatusCodes.OK).json({
+            message: 'Updates has been made.',
             data: {
                 user: updatedSchool
             }
             
         }) 
-    })
+    }

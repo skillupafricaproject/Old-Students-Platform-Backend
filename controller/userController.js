@@ -1,53 +1,48 @@
+const {StatusCodes } = require("http-status-codes")
+const { BadRequestError, 
+    UnauthenticatedError, 
+    NotFoundError} = require("../errors")
 const User = require('../model/User')
-const asyncErrors = require('./errorController')
 
-const filterObj = (obj, ...allowedFields) => {
-    const newObj = {};
-    Object.keys(obj).forEach(el => {
-        if(allowedFields.includes(el)) newObj[el] = obj[el];
-    });
-    return newObj;
+// const filterObj = (obj, ...allowedFields) => {
+//     const newObj = {};
+//     Object.keys(obj).forEach(el => {
+//         if(allowedFields.includes(el)) newObj[el] = obj[el];
+//     });
+//     return newObj;
+// }
+// get user profile
+exports.getUser = async (req, res) => {
+    const user = await User.find({_id:req.user.userId}).select("-password")
+
+    res.status(StatusCodes.OK).json({ user })
 }
 
-exports.updateMe = asyncErrors(async (req, res, next) => {
+exports.updateUserProfile = async (req, res) => {
+    const {id: userId} = req.params;
+
     //create error if user Posts password data
-    if(req.body.password) {
-        return next(res.status(400)
-        .json({message: 'You cannot update your password here. Please use the forget password route'}))
+    if(userId !== req.user.userId) {
+        throw  new UnauthenticatedError({message: 'You cannot perform this task'})
     }
 
-    //filtered out unwanted fields not allowed to get updated
-    const filteredBody =filterObj(req.body, 'firstName', 'email', 'dob', 'country', 'stateOfResidence', 'maritalStatus', 'occupation', 'number' );
-
-
     //update user document
-    const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, 
-        {new: true, runValidators: true,})
+    const user = await User.findByIdAndUpdate({ _id: userId}, req.body, 
+        {new: true, runValidators: true,
+        })
 
 
-    res.status(200).json({
-        status:'success',
-        data: {
-            user: updatedUser
-        }
+    res.status(StatusCodes.OK).json({
+            profile: user
         
     })
-})
+}
 
-exports.getUser = asyncErrors(async (req, res, next) => {
-    const user = await Profile.findOne({_id:req.params.id}).select("-password")
 
-    if(!user) return res.status(400).json({message:"No user exists"})
-
-    res.status(201).json({
-        user
-    })
-})
-
-exports.deleteMe = asyncErrors(async(req, res, next) => {
+exports.deleteMe = async(req, res, next) => {
     await Profile.findByIdAndUpdate(req.user.id, { active: false});
-    res.status(204).json({
+    res.status(StatusCodes.OK).json({
         status: 'success',
         data: null
     })
-})
+}
