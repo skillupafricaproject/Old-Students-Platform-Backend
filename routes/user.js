@@ -3,12 +3,13 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authentication");
+const {uploadProductImage} = require("../controller/uploadController")
 
 
 const { getUser } = require("../controller/userController");
 
 router.route("/getUserProfile").get(authMiddleware, getUser);
-
+router.route('/uploads').post(uploadProductImage);
 module.exports = router;
 
 

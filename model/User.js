@@ -20,7 +20,10 @@ const UserSchema = new mongoose.Schema({
     lowercase: [true, "Email already exist in our database"],
     validate: [validator.isEmail, "Please provide a valid email"],
   },
-  photo: String,
+  image: {
+    type: String,
+    //required: true,
+  },
   password: {
     type: String,
     required: [true, "Please provide a password"],
