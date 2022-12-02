@@ -5,11 +5,11 @@ const cors = require('cors')
 const rateLimit = require('express-rate-limit')
 const helmet = require ('helmet')
 //const mongoSanitize = require('express-mongo-sanitize')
-const xss = require('xss-clean')
-//const mg = require('mailgun.js')
 
-const fileUpload = require ("express-fileupload")
+const fileUpload = require ('express-fileupload')
 const cloudinary = require('cloudinary').v2;
+
+
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUD_API_KEY,
@@ -19,8 +19,8 @@ const app = express()
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
 app.use(cors())
-app.use(xss())
-app.use(fileUpload({ useTempFiles: true }))
+app.use(helmet())
+app.use(fileUpload({ useTempFiles: true, tempFileDir: '/tmp/' }))
 
 
 //routers
