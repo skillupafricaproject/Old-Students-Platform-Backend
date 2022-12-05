@@ -88,9 +88,14 @@ exports.verifyEmail = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   //check if the email and password fields are filled
-  if (!email || !password) {
-    res.status(StatusCodes.BAD_REQUEST).json({message: "Email and password is not correct"});
+  if (!email) {
+    res.status(StatusCodes.BAD_REQUEST).json({message: "Email is not correct"});
   }
+
+  if (!password) {
+    res.status(StatusCodes.BAD_REQUEST).json({message: "Password is not correct"});
+  }
+
 
   //check if user exists in the database and check if password is correct
   const user = await User.findOne({ email }).select("+password");
