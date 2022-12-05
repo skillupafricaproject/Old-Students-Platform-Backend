@@ -60,7 +60,7 @@ exports.verifyEmail = async (req, res) => {
     throw new UnauthenticatedError("Verification Failed.");
   }
   user.verified = true;
-  user.verificationToken = undefined;
+  //user.verificationToken = undefined;
 
   //res.status(StatusCodes.OK).json({message: "Email Verified!"})
 

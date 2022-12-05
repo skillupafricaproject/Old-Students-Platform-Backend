@@ -83,7 +83,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
-  verificationToken: Number,
+  verificationToken: String,
 
 });
 
