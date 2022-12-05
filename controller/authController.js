@@ -164,7 +164,7 @@ exports.resetPassword = async (req, res) => {
   const { token, email, password } = req.body;
   if (!token || !email || !password) {
     // throw new BadRequestError("Please provide all values");
-    res.status(404).json({ msg: 'please provide all values'})
+    res.status(404).json({ msg: 'Please provide all values'})
   }
   const user = await User.findOne({ email });
 
