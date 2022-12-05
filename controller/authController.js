@@ -162,8 +162,9 @@ exports.forgotPassword = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
   const { token, email, password } = req.body;
-  if (!token || !email || password) {
-    throw new BadRequestError("Please provide all values");
+  if (!token || !email || !password) {
+    // throw new BadRequestError("Please provide all values");
+    res.status(404).json({ msg: 'please provide all values'})
   }
   const user = await User.findOne({ email });
 
@@ -171,7 +172,7 @@ exports.resetPassword = async (req, res) => {
     const currentDate = new Date();
 
     if (
-      user.passwordToken === crypto.createHash(token) &&
+      user.passwordToken === createHash(token) &&
       user.passwordTokenExpirationDate > currentDate
     ) {
       user.password = password;
@@ -180,6 +181,7 @@ exports.resetPassword = async (req, res) => {
       await user.save();
     }
   }
+  res.status(200);
   //get user Based on token
   //   const hashedToken = crypto
   //     .createHash("sha256")
