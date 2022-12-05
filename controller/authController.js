@@ -89,14 +89,14 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
   //check if the email and password fields are filled
   if (!email || !password) {
-    throw new BadRequestError("Please fill in your login details");
+    res.status(StatusCodes.BAD_REQUEST).json({message: "Please fill in your login details"});
   }
 
   //check if user exists in the database and check if password is correct
   const user = await User.findOne({ email }).select("+password");
 
   if (!user) {
-    throw new BadRequestError("Invalid Credentials");
+    res.status(StatusCodes.BAD_REQUEST).json({message: "Invalid Credentials"});
   }
 
   const isPasswordCorrect = await user.comparePassword(password);
