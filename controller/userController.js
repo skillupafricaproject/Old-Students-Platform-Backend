@@ -13,13 +13,13 @@ const User = require('../model/User')
 // }
 // get user profile
 exports.getUser = async (req, res) => {
-    const user = await User.find({_id:req.user.userId}).select("-password")
-
-    res.status(StatusCodes.OK).json({ user })
+    const user = await User.find({_id:req.params.id}).select("-password")
+    if (!user) return res.status(400).json({message: "User does not exist"})
+    //res.status(StatusCodes.OK).json({ user })
 }
 
-exports.updateUserProfile = async (req, res) => {
-    const {id: userId} = req.params;
+exports.updateUser = async (req, res) => {
+    //const user = await User.findByIdAndUpdate ({id: userId} = req.params;)
 
     //create error if user Posts password data
     if(userId !== req.user.userId) {
