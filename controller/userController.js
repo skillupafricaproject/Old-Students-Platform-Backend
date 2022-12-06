@@ -23,7 +23,7 @@ exports.updateUserProfile = async (req, res) => {
 
     //create error if user Posts password data
     if(userId !== req.user.userId) {
-        throw  new UnauthenticatedError({message: 'You cannot perform this task'})
+        res.status(StatusCodes.BAD_REQUEST).json({message: 'You cannot perform this task'})
     }
 
     //update user document

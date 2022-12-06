@@ -42,18 +42,11 @@ const UserSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
-  dob: {
-    type: String,
-  },
   nickname: {
     type: String,
     default: "",
   },
-  address: {
-    type: String,
-    default: "",
-  },
-  country: {
+  currentLocation: {
     type: String,
     default: "",
   },
@@ -65,22 +58,51 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
-  number: {
+  phoneNumber: {
     type: Number,
   },
-  otherNumber: {
-    type: Number,
-  },
-  stateOfResidence: {
+  secondarySchool: {
     type: String,
     default: "",
   },
-  occupation: {
+  tertiarySchool: {
     type: String,
     default: "",
   },
-  occupationDetails: {
+  facultyDepartment:{
     type: String,
+    default: "",
+  },
+  profession: {
+    type: String,
+    default: "",
+  },
+  employmentStatus: {
+    type: String,
+    default: "",
+  },
+  yearOfStudy:{
+    type: Number,
+    default: "",
+  },
+  whatsApp:{
+    type: Number,
+    default: "",
+  },
+  twitter:{
+    type: Number,
+    default: "",
+  },
+  linkedIn:{
+    type: Number,
+    default: "",
+  },
+  faceBook:{
+    type: Number,
+    default: "",
+  },
+  instagram:{
+    type: Number,
     default: "",
   },
   verificationToken: String,
