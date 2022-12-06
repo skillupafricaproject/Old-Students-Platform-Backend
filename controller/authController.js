@@ -1,17 +1,17 @@
 const User = require("../model/User");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, UnauthenticatedError } = require("../errors");
-//const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const createHash = require("../util/createHash");
 const mailTransport = require("../util/sendEmail");
 //const { isValidObjectId } = require("mongoose");
 const crypto = require("crypto");
 
-// const signToken = (id) => {
-//   return jwt.sign({ id }, process.env.JWT_SECRET, {
-//     expiresIn: process.env.JWT_EXPIRESIN,
-//   });
-// };
+const signToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRESIN,
+  });
+};
 
 exports.signup = async (req, res) => {
   const { email, firstName, lastName, password } = req.body;
@@ -123,10 +123,18 @@ exports.login = async (req, res) => {
 //     //secure: true,
 //     httpOnly: true,
 //   });
+const token = signToken(user._id)
+res.cookie('jwt', token, {
+    expires: new Date(
+        Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    secure: true,
+    httpOnly: true
+});
 
   res.status(StatusCodes.OK).json({
     message: "Login Successful",
-    //token: token,
+    token
   });
 };
 
