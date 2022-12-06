@@ -116,26 +116,26 @@ exports.login = async (req, res) => {
   //send token to client
   //let token = user.createJWT()
 
-//   res.cookie("token", token, {
-//     expires: new Date(
-//       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-//     ),
-//     //secure: true,
-//     httpOnly: true,
-//   });
-const token = signToken(user._id)
-res.cookie('jwt', token, {
-    expires: new Date(
-        Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    secure: true,
-    httpOnly: true
-});
-
-  res.status(StatusCodes.OK).json({
-    message: "Login Successful",
-    token
+  //   res.cookie("token", token, {
+  //     expires: new Date(
+  //       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+  //     ),
+  //     //secure: true,
+  //     httpOnly: true,
+  //   });
+  const token = signToken(user._id)
+  res.cookie('jwt', token, {
+      expires: new Date(
+          Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      ),
+      secure: true,
+      httpOnly: true
   });
+
+    res.status(StatusCodes.OK).json({
+      message: "Login Successful",
+      token: token
+    });
 };
 
 exports.forgotPassword = async (req, res) => {

@@ -13,10 +13,11 @@ const User = require('../model/User')
 // }
 // get user profile
 exports.getUser = async (req, res) => {
-    const user = await User.find({_id:req.params.id}).select("-password")
+    const user = await User.findOne({_id:req.params.id}).select("-password")
     if (!user) 
     return res.status(400).json({message: "User does not exist"})
-    //res.status(StatusCodes.OK).json({ user })
+    
+    res.status(StatusCodes.OK).json({ user })
 }
 
 exports.updateUser = async (req, res) => {
