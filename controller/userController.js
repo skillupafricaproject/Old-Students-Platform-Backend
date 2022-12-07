@@ -17,7 +17,7 @@ exports.getUser = async (req, res) => {
     if (!user) 
     return res.status(400).json({message: "User does not exist"})
     
-    res.status(StatusCodes.OK).json({ user })
+    res.status(StatusCodes.OK).json({_id: req.params })
 }
 
 exports.updateUser = async (req, res) => {
