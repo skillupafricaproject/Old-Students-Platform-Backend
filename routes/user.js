@@ -7,9 +7,14 @@ const {uploadImage} = require("../controller/uploadController")
 
 
 const { getUser } = require("../controller/userController");
+const { updateUser } = require("../controller/userController");
 
-router.route("/getUser/:id").post(authMiddleware, getUser);
+
+
+router.route("/getuser/:id").patch(authMiddleware, getUser);
+router.route("/updateuser").patch(authMiddleware, updateUser);
 router.route('/uploads').post(uploadImage);
+
 module.exports = router;
 
 

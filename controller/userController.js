@@ -13,28 +13,47 @@ const User = require('../model/User')
 // }
 // get user profile
 exports.getUser = async (req, res) => {
-    const user = await User.findOne({_id:req.params.id}).select("-password")
+    const user = await User.findOneAndUpdate({id:req.params.id}).select("-password")
     if (!user) 
     return res.status(400).json({message: "User does not exist"})
-    
-    res.status(StatusCodes.OK).json({ user: user })
-}
+    user.firstName = req.body.firstName,
+    user.lastName = req.body.lastName,
+    user.email = req.body.email,
+    user.nickname = req.body.nickname,
+    user.currentLocation = req.body.currentLocation,
+    user.gender = req.body.gender,
+    user.maritalStatus = req.body.maritalStatus,
+    user.phoneNumber = req.body.phoneNumber,
+    user.secondarySchool = req.body.secondarySchool,
+    user.tertiarySchool = req.body.tertiarySchool,
+    user.facultyDepartment = req.body.facultyDepartment,
+    user.profession = req.body.profession,
+    user.employmentStatus = req.body.employmentStatus,
+    user.yearOfStudy = req.body.yearOfStudy,
+    user.whatsApp = req.body.whatsApp,
+    user.twitter = req.body.twitter,
+    user.linkedIn = req.body.linkedIn,
+    user.faceBook = req.body.faceBook,
+    user.instagram = req.body.instagram,
+
+    res.status(StatusCodes.OK).json({user})
+}   
 
 exports.updateUser = async (req, res) => {
-    //const user = await User.findByIdAndUpdate ({id: userId} = req.params;)
-
-    //create error if user Posts password data
-    if(userId !== req.user.userId) {
-        res.status(StatusCodes.BAD_REQUEST).json({message: 'You cannot perform this task'})
-    }
-
-    //update user document
-    const user = await User.findByIdAndUpdate({ _id: userId}, req.body, 
+    //const user = await User.findByIdAndUpdate ({id: userId} = req.params)
+    const user = await User.findByIdAndUpdate(req.user.id,
         {new: true, runValidators: true,
         })
 
+    //create error if user Posts password data
+    // if(userId !== req.user.userId) {
+    //     res.status(StatusCodes.BAD_REQUEST).json({message: 'You cannot perform this task'})
+    // }
 
-    res.status(StatusCodes.OK).json({
+    //update user document
+
+
+    res.status(200).json({
             profile: user
         
     })
