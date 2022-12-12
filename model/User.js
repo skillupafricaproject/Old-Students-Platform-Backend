@@ -82,27 +82,27 @@ const UserSchema = new mongoose.Schema({
     default: "",
   },
   yearOfStudy:{
-    type: Number,
+    type: String,
     default: "",
   },
   whatsApp:{
-    type: Number,
+    type: String,
     default: "",
   },
   twitter:{
-    type: Number,
+    type: String,
     default: "",
   },
   linkedIn:{
-    type: Number,
+    type: String,
     default: "",
   },
   faceBook:{
-    type: Number,
+    type: String,
     default: "",
   },
   instagram:{
-    type: Number,
+    type: String,
     default: "",
   },
   verificationToken: String,
