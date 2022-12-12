@@ -6,21 +6,21 @@ const rateLimit = require('express-rate-limit')
 const helmet = require ('helmet')
 //const mongoSanitize = require('express-mongo-sanitize')
 
-const fileUpload = require ('express-fileupload')
 const cloudinary = require('cloudinary').v2;
 
 
 cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET,
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_API_KEY,
+    api_secret: process.env.CLOUD_API_SECRET,
 });
 const app = express()
+const fileUpload = require ('express-fileupload')
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
 app.use(cors())
 app.use(helmet())
-app.use(fileUpload({ useTempFiles: true, tempFileDir: '/tmp/' }))
+app.use(fileUpload({ useTempFiles: true }))
 
 
 //routers
