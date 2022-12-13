@@ -15,7 +15,7 @@ const {
 
 router.route("/signup").post(signup);
 router.route("/verify-email/:id").post(verifyEmail);
-router.route("/login").post(authMiddleware, login);
+router.route("/login").post(login);
 router.route("/forgotPassword").post(forgotPassword);
 router.route("/reset-password").post(resetPassword);
 router.route("/logout").post(logout);

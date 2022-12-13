@@ -11,7 +11,7 @@ const { updateUser } = require("../controller/userController");
 
 
 
-router.route("/getuser/:id").patch(authMiddleware, getUser);
+router.route("/getuser/:id").post(authMiddleware, getUser);
 router.route("/updateuser").patch(authMiddleware, updateUser);
 router.route('/uploads').post(uploadImage);
 router.route('/getUserProfile/:id').get(getUserProfile)
