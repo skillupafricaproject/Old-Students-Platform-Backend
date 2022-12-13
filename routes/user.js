@@ -6,7 +6,7 @@ const authMiddleware = require("../middleware/authentication");
 const {uploadImage} = require("../controller/uploadController")
 
 
-const { getUser } = require("../controller/userController");
+const { getUser, getUserProfile } = require("../controller/userController");
 const { updateUser } = require("../controller/userController");
 
 
@@ -14,6 +14,7 @@ const { updateUser } = require("../controller/userController");
 router.route("/getuser/:id").patch(authMiddleware, getUser);
 router.route("/updateuser").patch(authMiddleware, updateUser);
 router.route('/uploads').post(uploadImage);
+router.route('/getUserProfile/:id').get(getUserProfile)
 
 module.exports = router;
 

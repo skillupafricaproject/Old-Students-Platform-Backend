@@ -38,7 +38,9 @@ const errorHandlerMiddleware = require("./middleware/error-handler")
 //     next()
 // })
 
-
+app.get("", (req, res)=>{
+    res.redirect("")
+})
 // routes
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/user', userRouter)

@@ -181,11 +181,10 @@ exports.resetPassword = async (req, res) => {
   }
   const user = await User.findOne({ email });
 
-  if (user) {
-    const currentDate = new Date();
+  const currentDate = new Date();
 
     if (
-      user.passwordToken === createHash(token) &&
+      user.passwordToken === (token) &&
       user.passwordTokenExpirationDate > currentDate
     ) {
       user.password = password;
@@ -193,108 +192,9 @@ exports.resetPassword = async (req, res) => {
       user.passwordTokenExpirationDate = null;
       await user.save();
     }
+    res.status(200).json({msg: `Password successfully updated`});
   }
-  res.status(200);
-  //get user Based on token
-  //   const hashedToken = crypto
-  //     .createHash("sha256")
-  //     .update(req.params.token)
-  //     .digest("hex");
-  //   console.log(hashedToken);
-  //   const user = await User.findOne({
-  //     passwordResetToken: hashedToken,
-  //     passwordResetExpires: { $gt: Date.now() },
-  //   });
-
-  //if expired token or no user
-  //   if (!user)
-  //     return next(res.status(400).json({ message: "Invalid or expired token" }));
-
-  //   user.password = req.body.password;
-  //   user.confirmPassword = req.body.confirmPassword;
-  //   user.passwordResetToken = undefined;
-  //   user.passwordResetExpires = undefined;
-  //   await user.save();
-
-  //log user in and send JWT
-  //   const token = signToken(user.id);
-
-  //   res.status(200).json({
-  //     status: "success",
-  //     token,
-  //   });
-  // };
-
-  // exports.updatePassword = asyncErrors(async (req, res, next) => {
-  //   //get user from collection
-  //   const user = await User.findById(req.user.id).select("+password");
-
-  //   //check if the current password is correct
-  //   if (!(await user.comparePassword(req.body.currentPassword, user.password))) {
-  //     return next(
-  //       res.status(401).json({
-  //         status: "Failure",
-  //         message: "Your current password is wrong.",
-  //       })
-  //     );
-  //   }
-
-  //   //if password is correct, update password
-  //   user.password = req.body.password;
-  //   user.confirmPassword = req.body.confirmPassword;
-  //   await user.save();
-
-  //   //LOG THE USER IN AND SEND JWT
-  //   const token = signToken(user.id);
-
-  //   res.status(200).json({
-  //     status: "success",
-  //     token,
-  //   });
-  // });
-  //
-  // exports.protect = asyncErrors(async (req, res, next) => {
-  //   //getting token and check if it's there
-  //   let token;
-  //   if (
-  //     req.headers.authorization &&
-  //     req.headers.authorization.startsWith("Bearer")
-  //   ) {
-  //     token = req.headers.authorization.split(" ")[1];
-  //   }
-  //   console.log(token);
-  //   if (!token) {
-  //     return next(
-  //       res
-  //         .status(401)
-  //         .json({ message: "You are not logged in! Please log in to get access" })
-  //     );
-  //   }
-
-  //   //verify token
-  //   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  //   console.log(decoded);
-  //   //check if user still exists
-  //   const currentUser = await User.findById(decoded.id);
-  //   if (!currentUser) {
-  //     return next(
-  //       res.status(401).json({ Message: "User with token no longer exists" })
-  //     );
-  //   }
-
-  //   //check if user recently changed password after token was issued
-  //   if (currentUser.changePasswordAfter(decoded.iat)) {
-  //     return next(
-  //       res.status(401).json({
-  //         message: "User recently changed password! Please log in again!",
-  //       })
-  //     );
-  //   }
-
-  //   req.user = currentUser;
-  //   next();
-  // });
-};
+  
 
 exports.logout = async (req, res) => {
   res.cookie("token", "logout", {
