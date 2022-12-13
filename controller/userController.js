@@ -16,33 +16,12 @@ const User = require("../model/User");
 // get user profile
 exports.getUser = async (req, res) => {
   //   const user = await User.findOne({ id: req.params.id })
-//   if (!user) return res.status(400).json({ message: "User does not exist" });
+ if (!req.params.id) return res.status(400).json({ message: "Please provide id" });
   const updateUser = await User.findByIdAndUpdate(
     { _id: req.params.id },
     req.body,
     { runValidators: true, new: true }
   );
-  // user.firstName = req.body.firstName,
-  // user.lastName = req.body.lastName,
-  // user.email = req.body.email,
-  // user.nickname = req.body.nickname,
-  // user.currentLocation = req.body.currentLocation,
-  // user.gender = req.body.gender,
-  // user.maritalStatus = req.body.maritalStatus,
-  // user.phoneNumber = req.body.phoneNumber,
-  // user.secondarySchool = req.body.secondarySchool,
-  // user.tertiarySchool = req.body.tertiarySchool,
-  // user.facultyDepartment = req.body.facultyDepartment,
-  // user.profession = req.body.profession,
-  // user.employmentStatus = req.body.employmentStatus,
-  // user.yearOfStudy = req.body.yearOfStudy,
-  // user.whatsApp = req.body.whatsApp,
-  // user.twitter = req.body.twitter,
-  // user.linkedIn = req.body.linkedIn,
-  // user.faceBook = req.body.faceBook,
-  // user.instagram = req.body.instagram,
-
-  //await user.save()
   res
     .status(StatusCodes.OK)
     .json({ updateUser, msg: `Profile successfully created ` });
@@ -54,7 +33,7 @@ exports.getUserProfile = async (req, res) => {
   if (!user)
     return res
       .status(StatusCodes.NOT_FOUND)
-      .json({ msg: `user with id ${id} not found` });
+      .json({ msg: `User with id ${id} not found` });
 
   //   const user = await User.find({});
   res.status(StatusCodes.OK).json({ user });
