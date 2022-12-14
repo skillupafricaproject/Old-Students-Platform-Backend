@@ -42,7 +42,7 @@ const UserSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
-  nickname: {
+  nickName: {
     type: String,
     default: "",
   },

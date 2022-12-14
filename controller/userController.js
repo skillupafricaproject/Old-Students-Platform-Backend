@@ -16,12 +16,35 @@ const User = require("../model/User");
 // get user profile
 exports.getUser = async (req, res) => {
   //   const user = await User.findOne({ id: req.params.id })
+  console.log(req.user);
  if (!req.user.userId) return res.status(400).json({ message: "Please provide id" });
   const updateUser = await User.findByIdAndUpdate(
-    { _id: req.params.id },
-    req.body,
-    { runValidators: true, new: true }
-  );
+     req.user.userId ,
+    {firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      email: req.body.email,
+      image: req.body.image,
+      nickname: req.body.nickname,
+      currentLocation: req.body.currentLocation,
+      gender: req.body.gender,
+      maritalStatus: req.body.maritalStatus,
+      phoneNumber: req.body.phoneNumber,
+      secondarySchool: req.body.secondarySchool,
+      tertiarySchool: req.body.tertiarySchool,
+      facultyDepartment: req.body.facultyDepartment,
+      profession: req.body.profession,
+      employmentStatus: req.body.employmentStatus,
+      yearOfStudy: req.body.yearOfStudy,
+      whatsApp: req.body.whatsApp,
+      twitter: req.body.twitter,
+      linkedIn: req.body.linkedIn,
+      faceBook: req.body.faceBook,
+      instagram: req.body.instagram,
+    },
+    
+    { runValidators: true, new: false }
+    );
+ console.log(updateUser);   
   res
     .status(StatusCodes.OK)
     .json({ updateUser, msg: `Profile successfully created ` });
