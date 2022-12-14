@@ -16,7 +16,7 @@ const User = require("../model/User");
 // get user profile
 exports.getUser = async (req, res) => {
   //   const user = await User.findOne({ id: req.params.id })
- if (!req.params.id) return res.status(400).json({ message: "Please provide id" });
+ if (!req.user.userId) return res.status(400).json({ message: "Please provide id" });
   const updateUser = await User.findByIdAndUpdate(
     { _id: req.params.id },
     req.body,
