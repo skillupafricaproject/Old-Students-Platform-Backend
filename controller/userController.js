@@ -51,8 +51,9 @@ exports.getUser = async (req, res) => {
 };
 
 exports.getUserProfile = async (req, res) => {
-  //const { id } = req.params;
-  const user = await User.findOne(req.user.userId);
+  const { id } = req.params;
+  const user = await User.findOne({ _id: id });
+  console.log(user)
   if (!user)
     return res
       .status(StatusCodes.NOT_FOUND)

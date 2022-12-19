@@ -39,11 +39,11 @@ const schoolSchema = new mongoose.Schema ({
         type: Number,
         default: ''
     },
-    User: {
+    User: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         //required: true
-    },
+    }],
 })
 
 const School = mongoose.model('School', schoolSchema)

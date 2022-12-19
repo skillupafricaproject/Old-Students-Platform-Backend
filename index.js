@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 const rateLimit = require('express-rate-limit')
 const helmet = require ('helmet')
+const fetch = require ('node-fetch');
 //const mongoSanitize = require('express-mongo-sanitize')
 
 const cloudinary = require('cloudinary').v2;
